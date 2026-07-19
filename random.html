@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Losowa edycja polskiej Wikipedii z adresu IP polskiej administracji publicznej</title>
+<link rel="stylesheet" href="style.css">
+<style>
+#frame {
+    border: 1px solid #ccc;
+    height: 70vh;
+    margin-top: 1em;
+    width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+    #frame { border-color: #444; }
+}
+</style>
+</head>
+
+<body>
+<nav><a href="index.html">Pełna lista</a> | <a href="rules.html">Regulamin</a> | <a href="privacy.html">Polityka prywatności</a></nav>
+
+<h1>Losowa edycja</h1>
+
+<p>Oglądasz losową zmianę w polskiej Wikipedii dokonaną z adresu IP należącego do
+polskiej administracji publicznej. Więcej informacji znajdziesz
+<a href="https://github.com/d33tah/plgov/blob/master/README-PL.md">TUTAJ</a>.</p>
+
+<p><button id="next" type="button">Losuj następną</button></p>
+
+<p id="details">Wczytywanie…</p>
+
+<iframe id="frame" title="Podgląd zmiany w Wikipedii" src="about:blank"></iframe>
+
+<script>
+"use strict";
+
+var DESKTOP_DIFF = "https://pl.wikipedia.org/w/index.php?diff=prev&oldid=";
+var MOBILE_DIFF = "https://pl.m.wikipedia.org/w/index.php?diff=prev&oldid=";
+
+var details = document.getElementById("details");
+var frame = document.getElementById("frame");
+var button = document.getElementById("next");
+var rows = [];
+
+function pickRandom() {
+    var row = rows[Math.floor(Math.random() * rows.length)];
+    var rdns = row[1], title = row[2], oldid = row[4];
+
+    details.textContent = "";
+    details.append(
+        "Artykuł: ",
+        link(title, DESKTOP_DIFF + oldid),
+        rdns ? " · Domena: " + rdns : "",
+        " · ",
+        link("prostsza wersja opisu zmian", MOBILE_DIFF + oldid)
+    );
+    frame.src = DESKTOP_DIFF + oldid;
+}
+
+function link(text, href) {
+    var a = document.createElement("a");
+    a.textContent = text;
+    a.href = href;
+    return a;
+}
+
+fetch("data/edits.json").then(function (response) {
+    if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+    }
+    return response.json();
+}).then(function (data) {
+    rows = data.rows;
+    button.addEventListener("click", pickRandom);
+    pickRandom();
+}).catch(function (error) {
+    details.textContent = "Nie udało się wczytać danych: " + error.message;
+});
+</script>
+</body>
+</html>

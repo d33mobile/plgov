@@ -1,9 +1,49 @@
-<HTML>
-<HEAD>
-<META HTTP-EQUIV="refresh" CONTENT="1;http://kolos.math.uni.lodz.pl/~d33tah/plgov">
-</HEAD>
-<BODY>
-Proszę czekać, trwa przekierowanie. Serwer nie odpowiada?
-Spróbuj <a href="https://git.io/plgov-mirror">TUTAJ</a> (2MB).
-</BODY>
-</HTML>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edycje polskiej Wikipedii z adresów IP polskiej administracji publicznej</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<nav><a href="random.html">Losuj edycję</a> | <a href="rules.html">Regulamin</a> | <a href="privacy.html">Polityka prywatności</a></nav>
+
+<h1>Edycje polskiej Wikipedii z adresów IP polskiej administracji publicznej</h1>
+
+<p>Poniższa lista zawiera edycje artykułów polskiej Wikipedii dokonane z adresów IP
+polskiej administracji publicznej. Jeśli chcesz dowiedzieć się o niej więcej, kliknij
+<a href="https://github.com/d33tah/plgov/blob/master/README-PL.md">TUTAJ</a>.</p>
+
+<p class="note">Dane pochodzą z lutego 2015 roku i są historycznym zrzutem — lista nie
+jest aktualizowana. O ograniczeniach tej metody badawczej przeczytasz w sekcji
+„Na ile wiarygodne są te dane?” w
+<a href="https://github.com/d33tah/plgov/blob/master/README-PL.md">opisie projektu</a>.</p>
+
+<div id="controls">
+<label>Szukaj: <input type="search" id="filter" placeholder="tytuł, rDNS lub IP" autocomplete="off"></label>
+<span id="status">Wczytywanie…</span>
+</div>
+
+<div class="table-wrap">
+<table id="edits">
+<thead>
+<tr>
+<th data-column="0">IP</th>
+<th data-column="1">rDNS</th>
+<th data-column="2">Tytuł</th>
+<th data-column="3">Data</th>
+<th class="nosort">Link</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<noscript><p class="note">Ta strona potrzebuje JavaScriptu, żeby wyświetlić tabelę.
+Bez niego możesz pobrać surowe dane: <a href="data/edits.json">edits.json</a>.</p></noscript>
+
+<script src="app.js"></script>
+</body>
+</html>

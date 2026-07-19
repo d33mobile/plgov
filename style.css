@@ -1,0 +1,151 @@
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 76em;
+    padding: 1em;
+}
+
+nav {
+    float: right;
+    padding-left: 1em;
+}
+
+h1 {
+    font-size: 1.6em;
+    margin-top: 0;
+}
+
+.note {
+    color: #555;
+    font-size: 0.9em;
+}
+
+#controls {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    margin: 1.5em 0 0.5em;
+}
+
+#filter {
+    font-size: 1em;
+    padding: 0.3em 0.5em;
+}
+
+#status {
+    color: #555;
+    font-size: 0.9em;
+}
+
+/* The table is wider than the text column on narrow screens; let it scroll
+   inside its own box rather than making the whole page scroll sideways. */
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 0.25em 0.5em;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: #eee;
+    position: sticky;
+    top: 0;
+}
+
+th[data-column] {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+th[data-column]::after {
+    color: #999;
+    content: " \2195";
+}
+
+th[data-column].asc::after {
+    color: inherit;
+    content: " \2191";
+}
+
+th[data-column].desc::after {
+    color: inherit;
+    content: " \2193";
+}
+
+td:nth-child(1), td:nth-child(4), td:nth-child(5) {
+    white-space: nowrap;
+}
+
+tbody tr:nth-child(even) {
+    background: #f7f7f7;
+}
+
+.whois {
+    color: #555;
+    font-size: 0.85em;
+}
+
+button {
+    font-size: 1em;
+    padding: 0.4em 1em;
+}
+
+@media (max-width: 40em) {
+    body {
+        padding: 0.5em;
+    }
+
+    nav {
+        float: none;
+        padding: 0;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #1a1a1a;
+        color: #ddd;
+    }
+
+    a {
+        color: #6cf;
+    }
+
+    a:visited {
+        color: #b9f;
+    }
+
+    .note, #status, .whois {
+        color: #aaa;
+    }
+
+    th, td {
+        border-color: #444;
+    }
+
+    th {
+        background: #2a2a2a;
+    }
+
+    tbody tr:nth-child(even) {
+        background: #222;
+    }
+
+    #filter, button {
+        background: #2a2a2a;
+        border: 1px solid #555;
+        color: #ddd;
+    }
+}
