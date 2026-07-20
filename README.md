@@ -11,12 +11,16 @@ caveats are documented on the `master` branch, in
 
 | Path | What it is |
 | --- | --- |
-| `index.html`, `app.js`, `style.css` | the table: sortable, filterable, client-side |
+| `index.html`, `app.js`, `style.css` | the full list: sortable, filterable, client-side |
+| `top.html` | articles ranked by how often they were edited |
 | `random.html` | shows a random edit, embedded from Wikipedia |
 | `data/edits.json` | the dataset (`{"columns": [...], "rows": [...]}`) |
 | `tools/extract_mirror.py` | regenerates `data/edits.json` from `mirror/index.html` |
 | `mirror/index.html` | archived snapshot of the old PHP page — the data's provenance |
-| `privacy.html`, `rules.html` | privacy policy and terms |
+
+All three pages read the same `data/edits.json`; `top.html` aggregates it in the
+browser rather than shipping a second, derived file that could drift out of
+sync. `top.html` links back as `index.html?q=<title>`.
 
 ## Regenerating the data
 

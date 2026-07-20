@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Najczęściej edytowane artykuły — plgov</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<nav><a href="index.html">Pełna lista</a> | <a href="random.html">Losuj edycję</a></nav>
+
+<h1>Najczęściej edytowane artykuły</h1>
+
+<p>Artykuły polskiej Wikipedii, które najczęściej poprawiano z adresów IP polskiej
+administracji publicznej. Kliknij tytuł, żeby zobaczyć wszystkie edycje tego
+artykułu na pełnej liście.</p>
+
+<p class="note">Wysoka pozycja nie musi oznaczać nic ciekawego — bywa, że jedna
+osoba redagowała ten sam artykuł wielokrotnie w ciągu jednego dnia. Kolumna
+„domen” pokazuje, z ilu różnych instytucji pochodziły poprawki.</p>
+
+<div id="controls">
+<label>Szukaj: <input type="search" id="filter" placeholder="tytuł lub domena" autocomplete="off"></label>
+<span id="status">Wczytywanie…</span>
+</div>
+
+<div id="edits" class="ranking" role="table" aria-label="Najczęściej edytowane artykuły">
+<div class="edits-head" role="row">
+<span role="columnheader">#</span>
+<span role="columnheader">Tytuł</span>
+<span role="columnheader">Edycji</span>
+<span role="columnheader">Domen</span>
+<span role="columnheader">Okres</span>
+</div>
+<div id="edits-body"></div>
+</div>
+
+<noscript><p class="note">Ta strona potrzebuje JavaScriptu.
+Bez niego możesz pobrać surowe dane: <a href="data/edits.json">edits.json</a>.</p></noscript>
+
+<script>
+"use strict";
+
+(function () {
+
+var body = document.getElementById("edits-body");
+var statusEl = document.getElementById("status");
+var filterInput = document.getElementById("filter");
+
+var articles = [];
+var view = [];
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+// [ip, rdns, title, timestamp, oldid] -> one entry per article title.
+function aggregate(rows) {
+    var byTitle = Object.create(null);
+    for (var i = 0; i < rows.length; i++) {
+        var title = rows[i][2], rdns = rows[i][1], stamp = rows[i][3];
+        var entry = byTitle[title];
+        if (!entry) {
+            entry = byTitle[title] = {
+                title: title,
+                edits: 0,
+                domains: Object.create(null),
+                first: stamp,
+                last: stamp
+            };
+        }
+        entry.edits++;
+        if (rdns) {
+            entry.domains[rdns] = true;
+        }
+        if (stamp < entry.first) {
+            entry.first = stamp;
+        }
+        if (stamp > entry.last) {
+            entry.last = stamp;
+        }
+    }
+
+    var out = [];
+    for (var key in byTitle) {
+        var e = byTitle[key];
+        e.domainCount = Object.keys(e.domains).length;
+        e.domainList = Object.keys(e.domains).join(" ");
+        out.push(e);
+    }
+    // Most edits first; ties broken alphabetically so the order is stable.
+    out.sort(function (a, b) {
+        return b.edits - a.edits || a.title.localeCompare(b.title, "pl");
+    });
+    return out;
+}
+
+// 1 edycja, 2-4 edycje, 5+ edycji -- and 12-14 go with the "many" form.
+function plural(n, one, few, many) {
+    if (n === 1) {
+        return one;
+    }
+    var mod10 = n % 10, mod100 = n % 100;
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return few;
+    }
+    return many;
+}
+
+function year(stamp) {
+    return stamp.slice(0, 4);
+}
+
+function period(entry) {
+    var from = year(entry.first), to = year(entry.last);
+    return from === to ? from : from + "–" + to;
+}
+
+function render() {
+    var html = new Array(view.length);
+    for (var i = 0; i < view.length; i++) {
+        var e = view[i];
+        html[i] = "<div class=\"edit\" role=\"row\">" +
+            "<span class=\"t-rank\" role=\"cell\">" + (e.rank) + ".</span>" +
+            "<span class=\"e-title\" role=\"cell\"><a href=\"index.html?q=" +
+                encodeURIComponent(e.title) + "\">" + escapeHtml(e.title) + "</a></span>" +
+            "<span class=\"e-meta\">" +
+                "<span class=\"t-count\" role=\"cell\">" + e.edits + " " +
+                    plural(e.edits, "edycja", "edycje", "edycji") + "</span>" +
+                "<span class=\"t-domains\" role=\"cell\" title=\"" +
+                    escapeHtml(e.domainList) + "\">" + e.domainCount + " " +
+                    plural(e.domainCount, "domena", "domeny", "domen") + "</span>" +
+                "<span class=\"t-period\" role=\"cell\">" + period(e) + "</span>" +
+            "</span>" +
+            "</div>";
+    }
+    body.innerHTML = html.join("");
+
+    if (view.length === articles.length) {
+        statusEl.textContent = articles.length + " " +
+            plural(articles.length, "artykuł", "artykuły", "artykułów");
+    } else {
+        statusEl.textContent = view.length + " z " + articles.length + " artykułów";
+    }
+}
+
+function applyFilter() {
+    var needle = filterInput.value.trim().toLowerCase();
+    if (needle === "") {
+        view = articles;
+    } else {
+        view = articles.filter(function (e) {
+            return e.title.toLowerCase().indexOf(needle) !== -1 ||
+                e.domainList.toLowerCase().indexOf(needle) !== -1;
+        });
+    }
+    render();
+}
+
+function debounce(fn, delay) {
+    var timer = null;
+    return function () {
+        clearTimeout(timer);
+        timer = setTimeout(fn, delay);
+    };
+}
+
+fetch("data/edits.json").then(function (response) {
+    if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+    }
+    return response.json();
+}).then(function (data) {
+    articles = aggregate(data.rows);
+    // Ranks are assigned once, so filtering shows an article's real position.
+    for (var i = 0; i < articles.length; i++) {
+        articles[i].rank = i + 1;
+    }
+    view = articles;
+    render();
+    filterInput.addEventListener("input", debounce(applyFilter, 150));
+}).catch(function (error) {
+    statusEl.textContent = "Nie udało się wczytać danych: " + error.message;
+});
+
+})();
+</script>
+</body>
+</html>

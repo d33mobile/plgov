@@ -48,6 +48,18 @@ function ipKey(ip) {
     return key;
 }
 
+// 1 edycja, 2-4 edycje, 5+ edycji -- and 12-14 go with the "many" form.
+function plural(n, one, few, many) {
+    if (n === 1) {
+        return one;
+    }
+    var mod10 = n % 10, mod100 = n % 100;
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return few;
+    }
+    return many;
+}
+
 // "2015-02-10T06:20:00Z" -> "2015-02-10 06:20". Sorting still uses the raw
 // value, so dropping the seconds here is purely cosmetic.
 function shortTimestamp(timestamp) {
@@ -86,7 +98,8 @@ function render() {
     body.innerHTML = html.join("");
 
     if (view.length === rows.length) {
-        statusEl.textContent = rows.length + " edycji";
+        statusEl.textContent = rows.length + " " +
+            plural(rows.length, "edycja", "edycje", "edycji");
     } else {
         statusEl.textContent = view.length + " z " + rows.length + " edycji";
     }
@@ -183,7 +196,14 @@ fetch("data/edits.json").then(function (response) {
 }).then(function (data) {
     rows = data.rows;
     view = rows.slice();
-    render();
+    // top.html links here as index.html?q=<title> to show one article's edits.
+    var query = new URLSearchParams(location.search).get("q");
+    if (query) {
+        filterInput.value = query;
+        applyFilter();
+    } else {
+        render();
+    }
     filterInput.addEventListener("input", debounce(applyFilter, 150));
     sortSelect.addEventListener("change", onSortSelect);
     document.querySelector(".edits-head").addEventListener("click", onHeaderClick);

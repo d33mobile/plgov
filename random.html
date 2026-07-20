@@ -6,6 +6,13 @@
 <title>Losowa edycja polskiej Wikipedii z adresu IP polskiej administracji publicznej</title>
 <link rel="stylesheet" href="style.css">
 <style>
+#controls {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+
 #frame {
     border: 1px solid #ccc;
     height: 70vh;
@@ -20,7 +27,7 @@
 </head>
 
 <body>
-<nav><a href="index.html">Pełna lista</a> | <a href="rules.html">Regulamin</a> | <a href="privacy.html">Polityka prywatności</a></nav>
+<nav><a href="index.html">Pełna lista</a> | <a href="top.html">Najczęściej edytowane</a></nav>
 
 <h1>Losowa edycja</h1>
 
@@ -28,7 +35,13 @@
 polskiej administracji publicznej. Więcej informacji znajdziesz
 <a href="https://github.com/d33tah/plgov/blob/master/README-PL.md">TUTAJ</a>.</p>
 
-<p><button id="next" type="button">Losuj następną</button></p>
+<p id="controls">
+<button id="next" type="button">Losuj następną</button>
+<label>Widok: <select id="view">
+<option value="visual">wizualny</option>
+<option value="source">kod źródłowy</option>
+</select></label>
+</p>
 
 <p id="details">Wczytywanie…</p>
 
@@ -45,21 +58,35 @@ var SOURCE_DIFF = "https://pl.wikipedia.org/w/index.php?diffmode=source&diff=pre
 var details = document.getElementById("details");
 var frame = document.getElementById("frame");
 var button = document.getElementById("next");
+var viewSelect = document.getElementById("view");
 var rows = [];
+var current = null;
 
-function pickRandom() {
-    var row = rows[Math.floor(Math.random() * rows.length)];
-    var rdns = row[1], title = row[2], oldid = row[4];
+function base() {
+    return viewSelect.value === "source" ? SOURCE_DIFF : VISUAL_DIFF;
+}
+
+// Re-renders whatever edit is on screen; pickRandom() draws a new one first.
+function show() {
+    var rdns = current[1], title = current[2], oldid = current[4];
+    var other = viewSelect.value === "source"
+        ? ["wersja wizualna", VISUAL_DIFF]
+        : ["wersja z kodem źródłowym", SOURCE_DIFF];
 
     details.textContent = "";
     details.append(
         "Artykuł: ",
-        link(title, VISUAL_DIFF + oldid),
+        link(title, base() + oldid),
         rdns ? " · Domena: " + rdns : "",
         " · ",
-        link("wersja z kodem źródłowym", SOURCE_DIFF + oldid)
+        link(other[0], other[1] + oldid)
     );
-    frame.src = VISUAL_DIFF + oldid;
+    frame.src = base() + oldid;
+}
+
+function pickRandom() {
+    current = rows[Math.floor(Math.random() * rows.length)];
+    show();
 }
 
 function link(text, href) {
@@ -77,6 +104,9 @@ fetch("data/edits.json").then(function (response) {
 }).then(function (data) {
     rows = data.rows;
     button.addEventListener("click", pickRandom);
+    // Switching the view keeps the current edit, so you can read the same
+    // change as markup without losing it to a reshuffle.
+    viewSelect.addEventListener("change", show);
     pickRandom();
 }).catch(function (error) {
     details.textContent = "Nie udało się wczytać danych: " + error.message;

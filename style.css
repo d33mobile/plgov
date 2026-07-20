@@ -124,6 +124,26 @@ h1 {
     font-size: 0.85em;
 }
 
+/* top.html: rank, title, then three numeric-ish columns. */
+.ranking .edits-head,
+.ranking .edit {
+    grid-template-columns:
+        max-content minmax(0, 1fr) max-content max-content max-content;
+}
+
+.t-rank {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.t-count,
+.t-domains,
+.t-period {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
 button {
     font-size: 1em;
     padding: 0.4em 1em;
@@ -159,6 +179,22 @@ button {
 
     .e-links {
         grid-area: links;
+    }
+
+    .ranking .edit {
+        grid-template-areas:
+            "rank title"
+            "meta meta";
+        grid-template-columns: max-content minmax(0, 1fr);
+    }
+
+    .t-rank {
+        grid-area: rank;
+    }
+
+    /* Right-aligning only makes sense while they are columns. */
+    .ranking .e-meta > span {
+        text-align: left;
     }
 
     .e-meta {
