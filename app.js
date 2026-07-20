@@ -9,12 +9,15 @@
 // it throws under strict mode.
 (function () {
 
-var DESKTOP_DIFF = "https://pl.wikipedia.org/w/index.php?diff=prev&oldid=";
-// useformat=mobile, not the pl.m. host: pl.m.wikipedia.org redirects /w/index.php
-// straight to the desktop site even for a phone, which would make this link a
-// duplicate of the one next to it. The mobile skin renders the diff inline and
-// highlighted, which is the readable view the project's README points people at.
-var MOBILE_DIFF = "https://pl.wikipedia.org/w/index.php?useformat=mobile&diff=prev&oldid=";
+// The default link shows the visual diff: diffmode=visual renders the change as
+// it appears in the article, with the edit highlighted, instead of as wikitext.
+// useformat=mobile drops the desktop sidebar and tabs around it. Note this is
+// not the pl.m. host -- pl.m.wikipedia.org redirects /w/index.php to the desktop
+// site even for a phone, so the host alone selects nothing.
+var VISUAL_DIFF =
+    "https://pl.wikipedia.org/w/index.php?useformat=mobile&diffmode=visual&diff=prev&oldid=";
+// The wikitext diff stays one click away, for edits where the markup is the point.
+var SOURCE_DIFF = "https://pl.wikipedia.org/w/index.php?diffmode=source&diff=prev&oldid=";
 var WHOIS = "https://apps.db.ripe.net/db-web-ui/query?searchtext=";
 
 var tbody = document.querySelector("#edits tbody");
@@ -60,9 +63,10 @@ function renderRow(row) {
         "<td>" + escapeHtml(title) + "</td>" +
         "<td title=\"" + escapeHtml(timestamp) + "\">" +
             escapeHtml(shortTimestamp(timestamp)) + "</td>" +
-        "<td><a href=\"" + MOBILE_DIFF + oldid +
-            "\" title=\"czytelniejszy widok zmian\">LINK</a> " +
-            "<a href=\"" + DESKTOP_DIFF + oldid + "\" title=\"wersja dwukolumnowa\">[2]</a></td>" +
+        "<td><a href=\"" + VISUAL_DIFF + oldid +
+            "\" title=\"zmiana pokazana tak, jak wygląda w artykule\">LINK</a> " +
+            "<a href=\"" + SOURCE_DIFF + oldid +
+            "\" title=\"zmiana w kodzie źródłowym, dwie kolumny\">[kod]</a></td>" +
         "</tr>";
 }
 

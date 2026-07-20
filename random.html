@@ -37,10 +37,10 @@ polskiej administracji publicznej. Więcej informacji znajdziesz
 <script>
 "use strict";
 
-var DESKTOP_DIFF = "https://pl.wikipedia.org/w/index.php?diff=prev&oldid=";
-// See the note in app.js: the pl.m. host redirects to the desktop diff, so the
-// simpler rendering has to be requested with useformat=mobile.
-var MOBILE_DIFF = "https://pl.wikipedia.org/w/index.php?useformat=mobile&diff=prev&oldid=";
+// See the note in app.js for why these are the parameters they are.
+var VISUAL_DIFF =
+    "https://pl.wikipedia.org/w/index.php?useformat=mobile&diffmode=visual&diff=prev&oldid=";
+var SOURCE_DIFF = "https://pl.wikipedia.org/w/index.php?diffmode=source&diff=prev&oldid=";
 
 var details = document.getElementById("details");
 var frame = document.getElementById("frame");
@@ -54,12 +54,12 @@ function pickRandom() {
     details.textContent = "";
     details.append(
         "Artykuł: ",
-        link(title, DESKTOP_DIFF + oldid),
+        link(title, VISUAL_DIFF + oldid),
         rdns ? " · Domena: " + rdns : "",
         " · ",
-        link("prostsza wersja opisu zmian", MOBILE_DIFF + oldid)
+        link("wersja z kodem źródłowym", SOURCE_DIFF + oldid)
     );
-    frame.src = DESKTOP_DIFF + oldid;
+    frame.src = VISUAL_DIFF + oldid;
 }
 
 function link(text, href) {
