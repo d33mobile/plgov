@@ -23,25 +23,32 @@ jest aktualizowana. O ograniczeniach tej metody badawczej przeczytasz w sekcji
 
 <div id="controls">
 <label>Szukaj: <input type="search" id="filter" placeholder="tytuł, rDNS lub IP" autocomplete="off"></label>
+<label>Sortuj: <select id="sort">
+<option value="">kolejność oryginalna</option>
+<option value="2:asc">tytuł A–Z</option>
+<option value="2:desc">tytuł Z–A</option>
+<option value="3:desc">data, od najnowszych</option>
+<option value="3:asc">data, od najstarszych</option>
+<option value="0:asc">IP rosnąco</option>
+<option value="0:desc">IP malejąco</option>
+<option value="1:asc">rDNS A–Z</option>
+<option value="1:desc">rDNS Z–A</option>
+</select></label>
 <span id="status">Wczytywanie…</span>
 </div>
 
-<div class="table-wrap">
-<table id="edits">
-<thead>
-<tr>
-<th data-column="0">IP</th>
-<th data-column="1">rDNS</th>
-<th data-column="2">Tytuł</th>
-<th data-column="3">Data</th>
-<th class="nosort">Link</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+<div id="edits" role="table" aria-label="Edycje">
+<div class="edits-head" role="row">
+<span role="columnheader" data-column="2">Tytuł</span>
+<span role="columnheader">Link</span>
+<span role="columnheader" data-column="0">IP</span>
+<span role="columnheader" data-column="1">rDNS</span>
+<span role="columnheader" data-column="3">Data</span>
+</div>
+<div id="edits-body"></div>
 </div>
 
-<noscript><p class="note">Ta strona potrzebuje JavaScriptu, żeby wyświetlić tabelę.
+<noscript><p class="note">Ta strona potrzebuje JavaScriptu, żeby wyświetlić listę.
 Bez niego możesz pobrać surowe dane: <a href="data/edits.json">edits.json</a>.</p></noscript>
 
 <script src="app.js"></script>

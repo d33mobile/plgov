@@ -20,9 +20,10 @@ var VISUAL_DIFF =
 var SOURCE_DIFF = "https://pl.wikipedia.org/w/index.php?diffmode=source&diff=prev&oldid=";
 var WHOIS = "https://apps.db.ripe.net/db-web-ui/query?searchtext=";
 
-var tbody = document.querySelector("#edits tbody");
+var body = document.getElementById("edits-body");
 var statusEl = document.getElementById("status");
 var filterInput = document.getElementById("filter");
+var sortSelect = document.getElementById("sort");
 
 var rows = [];
 var view = [];
@@ -53,21 +54,28 @@ function shortTimestamp(timestamp) {
     return timestamp.slice(0, 16).replace("T", " ");
 }
 
+// Title and links come first, then the metadata. On a narrow screen the .e-meta
+// wrapper becomes a second line of its own; on a wide one it is display:contents
+// so its children line up as ordinary grid columns. Either way nothing has to
+// scroll sideways.
 function renderRow(row) {
     var ip = row[0], rdns = row[1], title = row[2], timestamp = row[3], oldid = row[4];
-    return "<tr>" +
-        "<td>" + escapeHtml(ip) +
-            " <a class=\"whois\" href=\"" + WHOIS + encodeURIComponent(ip) +
-            "\" title=\"Sprawdź w rejestrze RIPE, do kogo należy ten adres\">[W]</a></td>" +
-        "<td>" + escapeHtml(rdns) + "</td>" +
-        "<td>" + escapeHtml(title) + "</td>" +
-        "<td title=\"" + escapeHtml(timestamp) + "\">" +
-            escapeHtml(shortTimestamp(timestamp)) + "</td>" +
-        "<td><a href=\"" + VISUAL_DIFF + oldid +
+    return "<div class=\"edit\" role=\"row\">" +
+        "<span class=\"e-title\" role=\"cell\">" + escapeHtml(title) + "</span>" +
+        "<span class=\"e-links\" role=\"cell\">" +
+            "<a href=\"" + VISUAL_DIFF + oldid +
             "\" title=\"zmiana pokazana tak, jak wygląda w artykule\">LINK</a> " +
             "<a href=\"" + SOURCE_DIFF + oldid +
-            "\" title=\"zmiana w kodzie źródłowym, dwie kolumny\">[kod]</a></td>" +
-        "</tr>";
+            "\" title=\"zmiana w kodzie źródłowym, dwie kolumny\">[kod]</a></span>" +
+        "<span class=\"e-meta\">" +
+            "<span class=\"e-ip\" role=\"cell\">" + escapeHtml(ip) +
+                " <a class=\"whois\" href=\"" + WHOIS + encodeURIComponent(ip) +
+                "\" title=\"Sprawdź w rejestrze RIPE, do kogo należy ten adres\">[W]</a></span>" +
+            "<span class=\"e-rdns\" role=\"cell\">" + escapeHtml(rdns) + "</span>" +
+            "<span class=\"e-date\" role=\"cell\" title=\"" + escapeHtml(timestamp) + "\">" +
+                escapeHtml(shortTimestamp(timestamp)) + "</span>" +
+        "</span>" +
+        "</div>";
 }
 
 function render() {
@@ -75,7 +83,7 @@ function render() {
     for (var i = 0; i < view.length; i++) {
         html[i] = renderRow(view[i]);
     }
-    tbody.innerHTML = html.join("");
+    body.innerHTML = html.join("");
 
     if (view.length === rows.length) {
         statusEl.textContent = rows.length + " edycji";
@@ -116,23 +124,47 @@ function sortView() {
     });
 }
 
+// The header is hidden on narrow screens, where the two-line layout leaves
+// nowhere to click, so the same sort is also driven by a <select>. Both entry
+// points funnel through here and keep each other in sync.
+function applySort(column, descending) {
+    sortColumn = column;
+    sortDescending = descending;
+
+    var headers = document.querySelectorAll(".edits-head [data-column]");
+    for (var i = 0; i < headers.length; i++) {
+        var isActive = parseInt(headers[i].dataset.column, 10) === column;
+        headers[i].classList.toggle("asc", isActive && !descending);
+        headers[i].classList.toggle("desc", isActive && descending);
+    }
+    sortSelect.value = column === null
+        ? ""
+        : column + ":" + (descending ? "desc" : "asc");
+
+    if (column === null) {
+        applyFilter();
+        return;
+    }
+    sortView();
+    render();
+}
+
 function onHeaderClick(event) {
-    var header = event.target.closest("th[data-column]");
+    var header = event.target.closest("[data-column]");
     if (!header) {
         return;
     }
     var column = parseInt(header.dataset.column, 10);
-    sortDescending = (column === sortColumn) ? !sortDescending : false;
-    sortColumn = column;
+    applySort(column, column === sortColumn ? !sortDescending : false);
+}
 
-    var headers = document.querySelectorAll("#edits th[data-column]");
-    for (var i = 0; i < headers.length; i++) {
-        headers[i].classList.remove("asc", "desc");
+function onSortSelect() {
+    if (sortSelect.value === "") {
+        applySort(null, false);
+        return;
     }
-    header.classList.add(sortDescending ? "desc" : "asc");
-
-    sortView();
-    render();
+    var parts = sortSelect.value.split(":");
+    applySort(parseInt(parts[0], 10), parts[1] === "desc");
 }
 
 function debounce(fn, delay) {
@@ -153,7 +185,8 @@ fetch("data/edits.json").then(function (response) {
     view = rows.slice();
     render();
     filterInput.addEventListener("input", debounce(applyFilter, 150));
-    document.querySelector("#edits thead").addEventListener("click", onHeaderClick);
+    sortSelect.addEventListener("change", onSortSelect);
+    document.querySelector(".edits-head").addEventListener("click", onHeaderClick);
 }).catch(function (error) {
     statusEl.textContent = "Nie udało się wczytać danych: " + error.message;
 });
