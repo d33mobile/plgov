@@ -38,7 +38,9 @@ polskiej administracji publicznej. Więcej informacji znajdziesz
 "use strict";
 
 var DESKTOP_DIFF = "https://pl.wikipedia.org/w/index.php?diff=prev&oldid=";
-var MOBILE_DIFF = "https://pl.m.wikipedia.org/w/index.php?diff=prev&oldid=";
+// See the note in app.js: the pl.m. host redirects to the desktop diff, so the
+// simpler rendering has to be requested with useformat=mobile.
+var MOBILE_DIFF = "https://pl.wikipedia.org/w/index.php?useformat=mobile&diff=prev&oldid=";
 
 var details = document.getElementById("details");
 var frame = document.getElementById("frame");

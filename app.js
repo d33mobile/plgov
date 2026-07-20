@@ -10,7 +10,11 @@
 (function () {
 
 var DESKTOP_DIFF = "https://pl.wikipedia.org/w/index.php?diff=prev&oldid=";
-var MOBILE_DIFF = "https://pl.m.wikipedia.org/w/index.php?diff=prev&oldid=";
+// useformat=mobile, not the pl.m. host: pl.m.wikipedia.org redirects /w/index.php
+// straight to the desktop site even for a phone, which would make this link a
+// duplicate of the one next to it. The mobile skin renders the diff inline and
+// highlighted, which is the readable view the project's README points people at.
+var MOBILE_DIFF = "https://pl.wikipedia.org/w/index.php?useformat=mobile&diff=prev&oldid=";
 var WHOIS = "https://apps.db.ripe.net/db-web-ui/query?searchtext=";
 
 var tbody = document.querySelector("#edits tbody");
@@ -56,7 +60,8 @@ function renderRow(row) {
         "<td>" + escapeHtml(title) + "</td>" +
         "<td title=\"" + escapeHtml(timestamp) + "\">" +
             escapeHtml(shortTimestamp(timestamp)) + "</td>" +
-        "<td><a href=\"" + MOBILE_DIFF + oldid + "\">LINK</a> " +
+        "<td><a href=\"" + MOBILE_DIFF + oldid +
+            "\" title=\"czytelniejszy widok zmian\">LINK</a> " +
             "<a href=\"" + DESKTOP_DIFF + oldid + "\" title=\"wersja dwukolumnowa\">[2]</a></td>" +
         "</tr>";
 }
